@@ -8,6 +8,7 @@ namespace TrayApp
 {
     static class Program
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -16,6 +17,7 @@ namespace TrayApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            Logger.Info("Программа запущена");
             Application.Run(new AppContext());
         }
     }

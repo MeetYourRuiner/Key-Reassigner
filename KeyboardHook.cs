@@ -29,6 +29,7 @@ namespace TrayApp
 		/// </summary>
 		private IntPtr hhook = IntPtr.Zero;
 		private bool isCtrlPressed = false;
+		private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 		#endregion
 
 		/*
@@ -59,6 +60,7 @@ namespace TrayApp
 		/// </summary>
 		~KeyboardHook()
 		{
+			Logger.Info("Вызван деструктор KeyboardHook");
 			Unhook();
 		}
 		#endregion
@@ -90,36 +92,52 @@ namespace TrayApp
 		/// <returns></returns>
 		public int HookProc(int code, int wParam, ref PInvoke.KeyboardHookStruct lParam)
 		{
-			if (code >= 0)
+			try
 			{
-				Keys key = (Keys)lParam.vkCode;
-				if (key == Keys.LControlKey)
+				if (code >= 0)
 				{
-					if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
+					Keys key = (Keys)lParam.vkCode;
+					if (key == Keys.LControlKey)
 					{
-						isCtrlPressed = true;
-					}
-					else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
-					{
-						isCtrlPressed = false;
-					}
-				}
-				else if (!isCtrlPressed)
-				{
-					Keys keyToInvoke;
-					if (HookedKeys.TryGetValue(key, out keyToInvoke))
-					{
-						KeyEventArgs kea = new KeyEventArgs(key);
-						if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) // && (KeyDown != null)
+						if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
 						{
-							PInvoke.INPUT input = new PInvoke.INPUT(keyToInvoke);
-							_ = PInvoke.SendInput(1, new PInvoke.INPUT[] { input }, PInvoke.INPUT.Size);
-							kea.Handled = true;
-							return 1;
+							isCtrlPressed = true;
+						}
+						else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
+						{
+							isCtrlPressed = false;
 						}
 					}
+					else if (!isCtrlPressed)
+					{
+						try
+						{
+							Keys keyToInvoke;
+							if (HookedKeys.TryGetValue(key, out keyToInvoke))
+							{
+								KeyEventArgs kea = new KeyEventArgs(key);
+								if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) // && (KeyDown != null)
+								{
+									PInvoke.INPUT input = new PInvoke.INPUT(keyToInvoke);
+									_ = PInvoke.SendInput(1, new PInvoke.INPUT[] { input }, PInvoke.INPUT.Size);
+									kea.Handled = true;
+									Logger.Info($"{key.ToString()} -> {keyToInvoke.ToString()}");
+									return 1;
+								}
+							}
+						}
+						catch (Exception e)
+						{
+							Logger.Error(e, "Ошибка на этапе вызова привязанной кнопки");
+						}
+
+					}
+
 				}
-				
+			}
+			catch (Exception e)
+			{
+				Logger.Error(e, "Ошибка на этапе перехвата");
 			}
 			return PInvoke.CallNextHookEx(hhook, code, wParam, ref lParam);
 		}
