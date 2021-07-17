@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TrayApp
+namespace KeyReassigner
 {
     static class Program
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
@@ -17,8 +14,10 @@ namespace TrayApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Logger.Info("Программа запущена");
-            Application.Run(new AppContext());
+            using (AppContext appContext = new AppContext())
+            {
+                Application.Run(appContext);
+            }
         }
     }
 }

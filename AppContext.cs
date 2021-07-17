@@ -1,49 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using KeyReassigner.Core.Interfaces;
+using KeyReassigner.Infrastructure;
+using KeyReassigner.Interfaces;
+using KeyReassigner.Services;
+using KeyReassigner.UI;
 using System.Windows.Forms;
 
-namespace TrayApp
+namespace KeyReassigner
 {
-    class AppContext: ApplicationContext
+    class AppContext : ApplicationContext, INavigator
     {
-        // private ConfigWindow configWindow = new ConfigWindow();
-        private NotifyIcon notifyIcon = new NotifyIcon();
-        private KeyboardHook keyboardHook = new KeyboardHook();
+        private readonly TrayIcon _trayIcon;
+        private readonly IKeyReassignmentsRepository _keyReassignmentsRepository;
+        private readonly IKeyReassignService _keyReassignService;
+        public readonly IConfigurationStorage _configuration;
+        private Form _currentWindow;
 
         public AppContext()
         {
-            // MenuItem configMenuItem = new MenuItem("Configuration", new EventHandler(ShowConfig));
-            MenuItem exitMenuItem = new MenuItem("Exit", new EventHandler(Exit));
+            _configuration = new XmlConfigurationStorage();
+            _keyReassignmentsRepository = new KeyReassignmentsRepository(_configuration);
+            _keyReassignService = new KeyReassignService(new WindowsKeyboardHook(), _keyReassignmentsRepository);
+            _trayIcon = new TrayIcon(this);
 
-            notifyIcon.Icon = TrayApp.Properties.Resources.AppIcon;
-            notifyIcon.Text = "Volume to Media";
-            notifyIcon.ContextMenu = new ContextMenu(new MenuItem[]
-                { 
-                    // configMenuItem, 
-                    exitMenuItem 
-                }
-            );
-
-            keyboardHook.HookedKeys.Add(Keys.VolumeUp, Keys.MediaNextTrack);
-            keyboardHook.HookedKeys.Add(Keys.VolumeDown, Keys.MediaPreviousTrack);
-            keyboardHook.HookedKeys.Add(Keys.VolumeMute, Keys.MediaPlayPause);
-            //keyboardHook.KeyDown += new KeyEventHandler(kh_KeyDown);
-
-            notifyIcon.Visible = true;
+            _keyReassignService.Start();
+            _trayIcon.Show();
         }
 
-        void kh_KeyDown(object sender, KeyEventArgs e)
+        public void NavigateTo(WindowTypes windowType)
         {
-            e.Handled = true;
+            switch (windowType)
+            {
+                case WindowTypes.Configuration:
+                    {
+                        if (!(_currentWindow is ConfigWindow))
+                        {
+                            _currentWindow?.Close();
+                            _currentWindow = new ConfigWindow(_keyReassignmentsRepository);
+                        }
+                        _currentWindow.Show();
+                        _currentWindow.Disposed += (s, e) => { _currentWindow = null; };
+                        _currentWindow.Activate();
+                        break;
+                    }
+                default:
+                    throw new System.ArgumentOutOfRangeException(nameof(windowType));
+            }
         }
-        void Exit(object sender, EventArgs e)
+
+        public void Exit()
         {
-            // We must manually tidy up and remove the icon before we exit.
-            // Otherwise it will be left behind until the user mouses over.
-            notifyIcon.Visible = false;
+            _trayIcon.Dispose();
             Application.Exit();
         }
     }
