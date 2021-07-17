@@ -76,7 +76,7 @@
   <ItemGroup>
     <Compile Include="AppContext.cs" />
     <Compile Include="Core\Interfaces\IConfigurationStorage.cs" />
-    <Compile Include="Core\EventArgs\KeyboardHookEventArgs.cs" />
+    <Compile Include="Core\CustomEventArgs\KeyboardHookEventArgs.cs" />
     <Compile Include="Core\Interfaces\INavigator.cs" />
     <Compile Include="Infrastructure\WindowsKeyboardHook.cs" />
     <Compile Include="Core\Interfaces\IKeyboardHook.cs" />

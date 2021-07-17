@@ -1,4 +1,4 @@
-﻿using KeyReassigner.Core.EventArgs;
+﻿using KeyReassigner.Core.CustomEventArgs;
 using System;
 using System.Windows.Forms;
 

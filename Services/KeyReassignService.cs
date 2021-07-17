@@ -1,5 +1,5 @@
 ﻿using KeyReassigner.Core.Entity;
-using KeyReassigner.Core.EventArgs;
+using KeyReassigner.Core.CustomEventArgs;
 using KeyReassigner.Interfaces;
 using System;
 using System.Windows.Forms;

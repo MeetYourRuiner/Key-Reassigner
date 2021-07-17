@@ -1,4 +1,4 @@
-﻿using KeyReassigner.Core.EventArgs;
+﻿using KeyReassigner.Core.CustomEventArgs;
 using KeyReassigner.Infrastructure.External;
 using KeyReassigner.Interfaces;
 using System;

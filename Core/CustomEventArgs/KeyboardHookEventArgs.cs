@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace KeyReassigner.Core.EventArgs
+namespace KeyReassigner.Core.CustomEventArgs
 {
     class KeyboardHookEventArgs : EventArgs
     {
